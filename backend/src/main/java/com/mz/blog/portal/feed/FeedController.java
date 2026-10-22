@@ -37,7 +37,7 @@ public class FeedController {
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String sitemap() {
         Map<String, String> config = portalService.config();
-        String base = config.getOrDefault("site.domain", "http://localhost:8080").replaceAll("/$", "");
+        String base = portalService.siteBaseUrl(config);
         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
         for (String path : List.of("/", "/articles", "/archive", "/albums", "/links")) appendUrl(xml, base + path, null);
@@ -61,7 +61,7 @@ public class FeedController {
     @GetMapping(value = "/rss.xml", produces = "application/rss+xml;charset=UTF-8")
     public String rss() {
         Map<String, String> config = portalService.config();
-        String base = config.getOrDefault("site.domain", "http://localhost:8080").replaceAll("/$", "");
+        String base = portalService.siteBaseUrl(config);
         String title = config.getOrDefault("site.name", "mz.blog");
         String description = config.getOrDefault("site.description", "记录、思考与生活");
         List<CmsArticle> articles = articleMapper.selectList(portalService.publishedQuery()
@@ -87,7 +87,7 @@ public class FeedController {
 
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
     public String robots() {
-        String base = portalService.config().getOrDefault("site.domain", "http://localhost:8080").replaceAll("/$", "");
+        String base = portalService.siteBaseUrl(portalService.config());
         return "User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nSitemap: " + base + "/sitemap.xml\n";
     }
 

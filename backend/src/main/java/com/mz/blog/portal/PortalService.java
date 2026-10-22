@@ -46,13 +46,17 @@ public class PortalService {
         return siteConfigService.publicConfig();
     }
 
+    public String siteBaseUrl(Map<String, String> config) {
+        return siteConfigService.siteBaseUrl(config);
+    }
+
     public void base(Model model, HttpServletRequest request, String title, String description, String image) {
         Map<String, String> config = config();
         String siteName = siteConfigService.get(config, "site.name", "mz.blog");
         String defaultDescription = siteConfigService.get(config, "site.description", "记录、思考与生活");
         String seoDescription = StringUtils.hasText(description) ? description
                 : siteConfigService.get(config, "seo.description", defaultDescription);
-        String domain = siteConfigService.get(config, "site.domain", "http://localhost:8080");
+        String domain = siteConfigService.siteBaseUrl(config);
         model.addAttribute("site", config);
         model.addAttribute("navMenus", navTree());
         model.addAttribute("currentPath", request.getRequestURI());

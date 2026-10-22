@@ -13,8 +13,9 @@ FROM maven:3.9.9-eclipse-temurin-17 AS backend-build
 WORKDIR /app
 COPY backend/ ./
 COPY --from=admin-build /app/backend/src/main/resources/static/admin ./src/main/resources/static/admin
+COPY deploy/maven/settings.xml /tmp/maven-settings.xml
 RUN --mount=type=cache,target=/root/.m2,sharing=locked \
-    mvn -B -ntp clean package -DskipTests
+    mvn -B -ntp -s /tmp/maven-settings.xml clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-jammy AS runtime
 RUN apt-get update \
