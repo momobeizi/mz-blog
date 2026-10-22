@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+*.log
+
+.idea/
+*.iml
+
+backend/target/
+backend/data/
+data/
+
+admin-web/node_modules/
+admin-web/*.tsbuildinfo
+admin-web/vite.config.js
+admin-web/vite.config.d.ts

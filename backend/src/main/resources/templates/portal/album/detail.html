@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero small album-detail-hero" th:style="|background-image:linear-gradient(180deg,rgba(25,50,52,.28),rgba(25,50,52,.56)),url('${album.coverUrl}')|">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">PHOTO ALBUM</span>
+            <h1 th:text="${album.title}">相册标题</h1>
+            <p th:text="${album.description}">相册描述</p>
+        </div>
+    </section>
+    <div class="portal-container album-detail-wrap">
+        <div class="album-back"><a th:href="@{/albums}">← 返回全部相册</a><span th:text="${#lists.size(album.photos)} + ' 张照片'">0 张照片</span></div>
+        <div class="album-photo-grid">
+            <figure class="album-photo" th:each="photo : ${album.photos}">
+                <img th:src="${photo.imageUrl}" th:alt="${photo.caption}" loading="lazy">
+                <figcaption th:if="${photo.caption != null}" th:text="${photo.caption}">照片说明</figcaption>
+            </figure>
+        </div>
+    </div>
+</main>
+</body>
+</html>

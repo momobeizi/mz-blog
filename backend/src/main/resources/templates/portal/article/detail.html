@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="article-hero" th:style="|background-image:linear-gradient(180deg,rgba(19,46,48,.06),rgba(19,46,48,.42)),url('${article.coverUrl}')|">
+        <div class="article-hero-inner">
+            <a class="article-category" th:href="@{/categories/{slug}(slug=${category.slug})}" th:if="${category != null}" th:text="${category.name}">分类</a>
+            <h1 th:text="${article.title}">文章标题</h1>
+            <div class="article-meta">
+                <span th:text="${author != null ? author.nickname : '站长'}">作者</span>
+                <span class="dot"></span>
+                <time th:text="${#strings.substring(article.publishedAt.toString(), 0, 10)}">2026-10-18</time>
+                <span class="dot"></span>
+                <span th:text="${article.viewCount} + ' 阅读'">0 阅读</span>
+            </div>
+        </div>
+    </section>
+    <div class="portal-container article-layout">
+        <article class="article-paper">
+            <div class="article-summary" th:if="${article.summary != null and !article.summary.isEmpty()}">
+                <span class="summary-label">摘要</span>
+                <p th:text="${article.summary}">摘要</p>
+            </div>
+            <div class="prose" id="articleContent" th:utext="${article.contentHtml}"></div>
+            <div class="article-tags" th:if="${!articleTags.isEmpty()}">
+                <span>Tagged</span>
+                <a th:each="tag : ${articleTags}" th:href="@{/tags/{slug}(slug=${tag.slug})}" th:text="'#' + ${tag.name}"></a>
+            </div>
+            <div class="article-nav">
+                <a th:if="${previousArticle != null}" th:href="@{/articles/{slug}(slug=${previousArticle.slug})}" class="prev">
+                    <small>← 上一篇</small><strong th:text="${previousArticle.title}">上一篇</strong>
+                </a>
+                <span th:if="${previousArticle == null}"></span>
+                <a th:if="${nextArticle != null}" th:href="@{/articles/{slug}(slug=${nextArticle.slug})}" class="next">
+                    <small>下一篇 →</small><strong th:text="${nextArticle.title}">下一篇</strong>
+                </a>
+            </div>
+        </article>
+        <aside class="article-aside">
+            <div class="toc-card"><h3>本文目录</h3><nav id="articleToc"><span class="muted">阅读时自动生成</span></nav></div>
+            <div class="author-card">
+                <img th:src="${author != null ? author.avatarUrl : site['site.logo']}" alt="">
+                <div><strong th:text="${author != null ? author.nickname : '站长'}">站长</strong><small>持续记录的人</small></div>
+            </div>
+        </aside>
+    </div>
+    <section class="related-wrap" th:if="${!relatedArticles.isEmpty()}">
+        <div class="portal-container">
+            <div class="section-heading"><div><span class="section-kicker">KEEP READING</span><h2>继续阅读</h2></div></div>
+            <div class="post-grid compact">
+                <th:block th:each="article : ${relatedArticles}"><article th:replace="~{portal/fragments/article-card :: card}"></article></th:block>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero small">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">TIME &amp; MEMORY</span>
+            <h1>归档</h1>
+            <p>时间把片段排成一条安静的路，共 <span th:text="${total}">0</span> 篇文章。</p>
+        </div>
+    </section>
+    <div class="portal-container portal-layout">
+        <div th:replace="~{portal/fragments/sidebar :: sidebar}"></div>
+        <div class="portal-main">
+            <div class="archive-list">
+                <section class="archive-group" th:each="group : ${archiveGroups}">
+                    <h2><span></span><th:block th:text="${group.key}">2026 年 10 月</th:block></h2>
+                    <a class="archive-item" th:each="article : ${group.value}" th:href="@{/articles/{slug}(slug=${article.slug})}">
+                        <time th:text="${#strings.substring(article.publishedAt.toString(), 5, 10)}">10-18</time>
+                        <strong th:text="${article.title}">文章标题</strong>
+                        <span th:text="${article.categoryName}">分类</span>
+                    </a>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

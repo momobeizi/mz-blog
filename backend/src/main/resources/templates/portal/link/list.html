@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero small">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">TO OTHER PLACES</span>
+            <h1>友链与常用入口</h1>
+            <p>互联网上，那些值得再去一次的地方。</p>
+        </div>
+    </section>
+    <div class="portal-container link-page">
+        <section class="link-section">
+            <div class="section-heading"><div><span class="section-kicker">FRIENDS</span><h2>友情链接</h2></div></div>
+            <div class="friend-grid" th:each="group : ${friends}">
+                <h3 th:text="${group.key}">默认分组</h3>
+                <a class="friend-card" th:each="link : ${group.value}" th:href="${link.url}" th:target="${link.openType}" th:rel="${link.nofollow == 1 ? 'nofollow noopener' : 'noopener'}">
+                    <img th:if="${link.logoUrl != null}" th:src="${link.logoUrl}" alt="">
+                    <div th:if="${link.logoUrl == null}" class="friend-letter" th:text="${#strings.substring(link.name,0,1)}">友</div>
+                    <div><strong th:text="${link.name}">链接名称</strong><p th:text="${link.description}">简介</p></div>
+                </a>
+            </div>
+        </section>
+        <section class="link-section">
+            <div class="section-heading"><div><span class="section-kicker">USEFUL LINKS</span><h2>常用链接</h2></div></div>
+            <div class="common-links" th:each="group : ${commons}">
+                <h3 th:text="${group.key}">默认分组</h3>
+                <a th:each="link : ${group.value}" th:href="${link.url}" th:target="${link.openType}"><span th:text="${link.name}">名称</span><small th:text="${link.description}">描述</small><em>↗</em></a>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

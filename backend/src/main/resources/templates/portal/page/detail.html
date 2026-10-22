@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero small">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">ABOUT THIS SPACE</span>
+            <h1 th:text="${page.title}">页面标题</h1>
+            <p>一个独立页面的安静角落。</p>
+        </div>
+    </section>
+    <div class="portal-container narrow-container">
+        <article class="article-paper standalone">
+            <div class="prose" th:utext="${page.contentHtml}"></div>
+        </article>
+    </div>
+</main>
+</body>
+</html>

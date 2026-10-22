@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${seoTitle}">mz.blog</title>
+    <meta name="description" th:content="${seoDescription}">
+    <meta name="keywords" th:content="${seoKeywords}">
+    <link rel="canonical" th:href="${canonical}">
+    <meta property="og:title" th:content="${seoTitle}">
+    <meta property="og:description" th:content="${seoDescription}">
+    <meta property="og:image" th:content="${ogImage}">
+    <meta property="og:type" content="website">
+    <link rel="icon" th:href="${site['site.favicon']}">
+    <link rel="stylesheet" th:href="@{/assets/site.css}">
+    <script th:src="@{/assets/site.js}" defer></script>
+    <th:block layout:fragment="head"></th:block>
+</head>
+<body th:classappend="${bodyClass}">
+<div th:replace="~{portal/fragments/header :: header}"></div>
+<main layout:fragment="content"></main>
+<div th:replace="~{portal/fragments/footer :: footer}"></div>
+</body>
+</html>

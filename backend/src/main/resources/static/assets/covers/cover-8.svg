@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs><linearGradient id="u" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101d36"/><stop offset=".65" stop-color="#233a63"/><stop offset="1" stop-color="#54b8c6"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="url(#u)"/>
+  <rect x="175" y="125" width="850" height="550" rx="26" fill="#0b1428" opacity=".72" stroke="#9be8ef" stroke-opacity=".25"/>
+  <rect x="175" y="125" width="850" height="58" rx="26" fill="#1e3154"/>
+  <g fill="#ffd6a1"><circle cx="218" cy="154" r="8"/><circle cx="246" cy="154" r="8"/><circle cx="274" cy="154" r="8"/></g>
+  <path d="M235 245h260M235 290h520M235 335h470M235 380h560M235 425h390" stroke="#c7f6f5" stroke-width="12" stroke-linecap="round" opacity=".4"/>
+  <path d="M235 505h300M235 550h470" stroke="#7ee5df" stroke-width="12" stroke-linecap="round" opacity=".3"/>
+  <rect x="730" y="470" width="230" height="118" rx="14" fill="#39c5bb" opacity=".15" stroke="#7ee5df" stroke-opacity=".55"/>
+  <text x="845" y="543" text-anchor="middle" font-family="Menlo,monospace" font-size="36" fill="#bffcf8">&lt;/&gt;</text>
+</svg>

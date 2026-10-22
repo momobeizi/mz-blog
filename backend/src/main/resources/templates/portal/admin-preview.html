@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'预览 · ' + ${article.title}">文章预览</title>
+    <link rel="stylesheet" th:href="@{/assets/site.css}">
+</head>
+<body class="preview-body">
+<div class="preview-bar">
+    <div><strong>后台预览</strong><span th:text="${article.status}">DRAFT</span></div>
+    <a th:href="@{/content/articles/{id}/edit(id=${article.id})}" onclick="window.close();return false;">关闭预览</a>
+</div>
+<div class="preview-paper">
+    <span class="preview-kicker">ARTICLE PREVIEW</span>
+    <h1 th:text="${article.title}">文章标题</h1>
+    <div class="article-meta preview-meta">
+        <span th:text="${author != null ? author.nickname : '站长'}">作者</span>
+        <span class="dot"></span>
+        <span th:text="${article.contentFormat}">HTML</span>
+    </div>
+    <div class="prose" th:utext="${article.contentHtml}"></div>
+</div>
+</body>
+</html>

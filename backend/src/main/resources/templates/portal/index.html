@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="home-hero">
+        <div class="hero-image"></div>
+        <div class="hero-veil"></div>
+        <div class="hero-copy">
+            <span class="hero-eyebrow">A QUIET PLACE TO REMEMBER</span>
+            <h1 th:text="${heroTitle}">相信记录的力量</h1>
+            <p th:text="${heroSubtitle}">mz.blog · 个人数字花园</p>
+            <a href="#latest" class="hero-scroll">向下翻一页 <span>↓</span></a>
+        </div>
+        <div class="hero-side-word">MZ.BLOG</div>
+    </section>
+
+    <div class="portal-container portal-layout">
+        <div th:replace="~{portal/fragments/sidebar :: sidebar}"></div>
+        <div class="portal-main">
+            <section class="content-section" id="latest">
+                <div class="section-heading">
+                    <div><span class="section-kicker">LATEST NOTES</span><h2>最新文章</h2></div>
+                    <a th:href="@{/articles}" class="more-link">全部文章 <span>→</span></a>
+                </div>
+                <div class="post-grid" th:if="${!latestArticles.isEmpty()}">
+                    <th:block th:each="article : ${latestArticles}"><article th:replace="~{portal/fragments/article-card :: card}"></article></th:block>
+                </div>
+                <div class="empty-state" th:if="${latestArticles.isEmpty()}">还没有发布文章。</div>
+            </section>
+
+            <section class="content-section" th:each="entry : ${categoryArticles}">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-kicker" th:text="${#lists.size(categoryArticles)} + ' COLLECTIONS'">COLLECTIONS</span>
+                        <h2 th:each="category : ${categories}" th:if="${category.id == entry.key}" th:text="${category.name}">分类</h2>
+                    </div>
+                    <a th:each="category : ${categories}" th:if="${category.id == entry.key}"
+                       th:href="@{/categories/{slug}(slug=${category.slug})}" class="more-link">查看分类 <span>→</span></a>
+                </div>
+                <div class="post-grid compact">
+                    <th:block th:each="article : ${entry.value}"><article th:replace="~{portal/fragments/article-card :: card}"></article></th:block>
+                </div>
+            </section>
+
+            <section class="quote-band">
+                <span>“</span>
+                <p>把生活写成一座可以回来的花园。</p>
+                <small>— 写在每一篇文章之前</small>
+            </section>
+        </div>
+    </div>
+</main>
+</body>
+</html>

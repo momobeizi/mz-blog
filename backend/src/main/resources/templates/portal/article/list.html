@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero small">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">WRITING &amp; LIVING</span>
+            <h1 th:if="${currentCategory != null}" th:text="${currentCategory.name}">分类</h1>
+            <h1 th:if="${currentCategory == null and keyword != null and !keyword.isEmpty()}" th:text="'搜索：' + ${keyword}">搜索</h1>
+            <h1 th:if="${currentCategory == null and (keyword == null or keyword.isEmpty())}">文章与片段</h1>
+            <p th:if="${currentCategory != null}" th:text="${currentCategory.description}">分类描述</p>
+            <p th:if="${currentCategory == null}">在文字里，重新遇见那些走过的日子。</p>
+        </div>
+    </section>
+    <div class="portal-container portal-layout">
+        <div th:replace="~{portal/fragments/sidebar :: sidebar}"></div>
+        <div class="portal-main">
+            <div class="filter-strip">
+                <a th:href="@{/articles}" th:classappend="${currentCategory == null and (keyword == null or keyword.isEmpty())} ? 'active'">全部</a>
+                <a th:each="category : ${categories}" th:href="@{/categories/{slug}(slug=${category.slug})}"
+                   th:text="${category.name}" th:classappend="${currentCategory != null and currentCategory.id == category.id} ? 'active'"></a>
+            </div>
+            <div class="post-grid two-col" th:if="${!articles.isEmpty()}">
+                <th:block th:each="article : ${articles}"><article th:replace="~{portal/fragments/article-card :: card}"></article></th:block>
+            </div>
+            <div class="empty-state" th:if="${articles.isEmpty()}">
+                <strong>没有找到相关内容</strong>
+                <p>换一个关键词，或者去其他地方走走。</p>
+            </div>
+            <nav th:replace="~{portal/fragments/pagination :: pager(${pageData})}"></nav>
+        </div>
+    </div>
+</main>
+</body>
+</html>

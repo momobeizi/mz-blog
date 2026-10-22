@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="portal-sidebar" th:fragment="sidebar">
+    <section class="profile-card">
+        <img class="profile-avatar" th:src="${site['site.logo']}" alt="">
+        <h2 th:text="${site['site.name']}">mz.blog</h2>
+        <p class="profile-subtitle" th:text="${site['site.subtitle']}">记录、思考与生活</p>
+        <div class="profile-stats">
+            <div><strong th:text="${articleCount}">0</strong><span>文章</span></div>
+            <div><strong th:text="${categoryCount}">0</strong><span>分类</span></div>
+            <div><strong th:text="${tagCount}">0</strong><span>标签</span></div>
+        </div>
+    </section>
+    <form class="side-search" th:action="@{/search}" method="get" th:if="${featureSearch}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input type="search" name="q" placeholder="搜索文章..." th:value="${keyword}">
+        <button type="submit">搜索</button>
+    </form>
+    <section class="side-card" th:if="${aboutPage != null}">
+        <h3><span></span> 关于这里</h3>
+        <div class="about-mini" th:text="${#strings.abbreviate(aboutPage.contentText, 160)}"></div>
+        <a class="text-link" th:href="@{/p/{slug}(slug=${aboutPage.slug})}">了解更多 <span>→</span></a>
+    </section>
+    <section class="side-card">
+        <h3><span></span> 标签</h3>
+        <div class="tag-cloud">
+            <a th:each="tag : ${tags}" th:href="@{/tags/{slug}(slug=${tag.slug})}" th:text="'#' + ${tag.name}"></a>
+        </div>
+    </section>
+    <section class="side-card side-note">
+        <div class="note-mark">“</div>
+        <p>记录不是为了证明什么，而是给未来的自己留一盏灯。</p>
+    </section>
+</aside>
+</body>
+</html>

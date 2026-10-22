@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="site-header" th:fragment="header">
+    <div class="nav-shell">
+        <a class="site-brand" th:href="@{/}">
+            <img th:src="${site['site.logo']}" alt="">
+            <span th:text="${site['site.name']}">mz.blog</span>
+        </a>
+        <nav class="site-nav" id="siteNav">
+            <a th:each="nav : ${navMenus}" th:href="${nav.resolvedUrl}" th:text="${nav.name}"
+               th:target="${nav.openType}" th:classappend="${currentPath == nav.resolvedUrl} ? 'active'"></a>
+        </nav>
+        <div class="nav-tools">
+            <a th:if="${featureSearch}" th:href="@{/search}" class="icon-button" aria-label="搜索">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            </a>
+            <a th:if="${featureRss}" th:href="@{/rss.xml}" class="icon-button" aria-label="RSS">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5a14 14 0 0 1 14 14M5 11a8 8 0 0 1 8 8"/><circle cx="6" cy="18" r="1.5" fill="currentColor"/></svg>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span></button>
+        </div>
+    </div>
+</header>
+</body>
+</html>

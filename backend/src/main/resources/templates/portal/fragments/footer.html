@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer class="site-footer" th:fragment="footer">
+    <div class="footer-water"></div>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-mark" th:text="${site['site.name']}">mz.blog</div>
+            <p th:text="${site['site.footer_text']}">在喧闹的世界里，留下一块安静的地方。</p>
+        </div>
+        <div class="footer-links">
+            <a th:each="link : ${footerLinks}" th:href="${link.url}" th:text="${link.name}" th:target="${link.openType}"></a>
+        </div>
+        <div class="footer-meta">
+            <span th:text="${site['site.copyright']}">© 2026 mz.blog</span>
+            <span th:if="${site['site.icp'] != ''}" th:text="${site['site.icp']}"></span>
+            <span>Powered by Spring Boot · Thymeleaf</span>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

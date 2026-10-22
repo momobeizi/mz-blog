@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{portal/layout/main}">
+<head><th:block layout:fragment="head"></th:block></head>
+<body>
+<main layout:fragment="content">
+    <section class="page-hero album-hero">
+        <div class="page-hero-inner">
+            <span class="hero-eyebrow">LIGHT &amp; MOMENTS</span>
+            <h1>相册</h1>
+            <p>光线落下来的时候，日常就有了形状。</p>
+        </div>
+    </section>
+    <div class="portal-container">
+        <div class="album-grid">
+            <a class="album-card" th:each="album : ${albums}" th:href="@{/albums/{slug}(slug=${album.slug})}">
+                <div class="album-cover"><img th:src="${album.coverUrl}" th:alt="${album.title}" loading="lazy"></div>
+                <div class="album-copy">
+                    <span th:text="${albumPhotos[album.id] != null and !albumPhotos[album.id].isEmpty() ? '有新照片' : 'PHOTO ALBUM'}">PHOTO ALBUM</span>
+                    <h2 th:text="${album.title}">相册标题</h2>
+                    <p th:text="${album.description}">相册描述</p>
+                    <em>查看相册 →</em>
+                </div>
+            </a>
+        </div>
+    </div>
+</main>
+</body>
+</html>
