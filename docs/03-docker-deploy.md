@@ -57,13 +57,58 @@ DB_PASSWORD=替换为数据库密码
 - `SITE_BASE_URL`：站点对外地址，用于 canonical、RSS、Sitemap 和 robots.txt，末尾不要带 `/`。
 - 未启用 HTTPS 时使用 `COOKIE_SECURE=false`；启用 HTTPS 后改为 `true`。
 
+## 构建 JAR（开发机）
+
+后台管理系统不是单独运行的前端服务。`admin-web` 构建后的静态文件会写入后端的资源目录，再由 Maven 一起打进 Spring Boot JAR：
+
+```text
+admin-web 源码
+  -> pnpm build
+  -> backend/src/main/resources/static/admin
+  -> mvn package
+  -> deploy/app.jar（包含前台模板和后台管理页面）
+```
+
+在开发机执行：
+
+```bash
+./scripts/build-app.sh
+```
+
+脚本会依次完成：
+
+```bash
+cd admin-web
+pnpm install --frozen-lockfile
+pnpm build
+
+cd ../backend
+mvn clean package -DskipTests
+cp target/mz-blog-*.jar ../deploy/app.jar
+```
+
+也可以手工执行上述命令。构建完成后确认 JAR 存在：
+
+```bash
+ls -lh deploy/app.jar
+```
+
+上传到服务器：
+
+```bash
+scp deploy/app.jar 用户@服务器:/项目目录/mz-blog/deploy/app.jar
+```
+
+服务器只需要 Docker，不需要安装 Node.js 或 Maven。
+
 ## 部署应用
 
 ```bash
-docker compose build
-docker compose up -d
+docker compose up -d --build
 docker compose ps
 ```
+
+Docker 构建只会把 `deploy/app.jar` 放入 Java 运行镜像，不会在服务器上重新编译前后端。
 
 查看日志：
 
@@ -106,10 +151,17 @@ proxy_pass http://127.0.0.1:8080;
 
 ## 更新发版
 
+开发机重新构建并上传 JAR：
+
 ```bash
-git pull
-docker compose build app
-docker compose up -d app
+./scripts/build-app.sh
+scp deploy/app.jar 用户@服务器:/项目目录/mz-blog/deploy/app.jar
+```
+
+服务器更新应用：
+
+```bash
+docker compose up -d --build
 docker compose ps
 ```
 
@@ -164,10 +216,11 @@ docker compose start app
 
 ## 回滚
 
+保留上一版本的 JAR，例如 `deploy/app.jar.previous`。回滚时替换 JAR 后重新构建容器：
+
 ```bash
-git checkout <上一个可用版本>
-docker compose build app
-docker compose up -d app
+cp deploy/app.jar.previous deploy/app.jar
+docker compose up -d --build
 ```
 
 如果新版本包含不兼容的数据库迁移，需要同时恢复发版前的数据库备份。生产环境建议只使用向后兼容的迁移脚本，避免直接修改已经执行过的历史迁移。

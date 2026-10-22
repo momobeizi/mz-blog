@@ -7,6 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runtime
+      args:
+        JAR_FILE: ${JAR_FILE:-deploy/app.jar}
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
