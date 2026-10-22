@@ -2,30 +2,62 @@
 
 ## 组成
 
-- `nginx`：对外入口，转发到 Spring Boot。
-- `app`：Spring Boot 3 + Thymeleaf + React 后台静态资源。
-- `mysql`：MySQL 8，首次启动后由 Flyway 自动建表和初始化数据。
-- `mysql-data`：数据库持久化卷。
+服务器上已经有 MySQL 和 Nginx，Compose 只部署应用：
+
+- `app`：Spring Boot 3 + Thymeleaf 前台 + 打包进应用的 React 后台管理系统。
 - `uploads`：上传文件持久化卷，容器内路径为 `/data/uploads`。
 
-## 首次部署
+应用仅绑定宿主机回环地址 `127.0.0.1:${APP_PORT}`，由服务器已有的 Nginx 反向代理对外提供服务。MySQL 也不在 Compose 中启动，应用通过环境变量连接已有数据库。
+
+## 准备 MySQL
+
+建议为本站创建独立数据库和专用账号：
+
+```sql
+CREATE DATABASE mz_blog_cms
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'mz_blog'@'%' IDENTIFIED BY '替换为强密码';
+GRANT ALL PRIVILEGES ON mz_blog_cms.* TO 'mz_blog'@'%';
+FLUSH PRIVILEGES;
+```
+
+应用启动时由 Flyway 自动执行迁移并初始化数据，不需要手工导入 SQL。
+
+MySQL 在 Docker 宿主机上时，默认使用 `DB_HOST=host.docker.internal`。Compose 已为 Linux 宿主机添加 `host-gateway` 映射。同时确认：
+
+- MySQL 监听地址允许容器访问，例如监听 `0.0.0.0:3306`。
+- MySQL 防火墙或云安全组允许 Docker 网段访问。
+- 数据库账号的 Host 允许从 Docker 网络连接，通常使用 `%`，或为具体网段单独授权。
+
+MySQL 在另一台服务器或云数据库时，把 `DB_HOST` 改成实际地址即可。MySQL 与服务在同一个自定义 Docker 网络时，也可以填写 MySQL 容器名，并把 `app` 接入该网络。
+
+## 配置环境变量
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env`，至少修改：
+编辑 `.env`：
 
 ```bash
-MYSQL_ROOT_PASSWORD=强密码
-MYSQL_PASSWORD=强密码
+APP_PORT=8080
 SITE_BASE_URL=https://你的域名
 COOKIE_SECURE=true
+
+DB_HOST=host.docker.internal
+DB_PORT=3306
+DB_DATABASE=mz_blog_cms
+DB_USERNAME=mz_blog
+DB_PASSWORD=替换为数据库密码
 ```
 
-本地 HTTP 测试时保留 `COOKIE_SECURE=false`，启用 HTTPS 后改为 `true`。
+- `APP_PORT`：应用绑定到宿主机 `127.0.0.1` 的端口，供现有 Nginx 反向代理。
+- `SITE_BASE_URL`：站点对外地址，用于 canonical、RSS、Sitemap 和 robots.txt，末尾不要带 `/`。
+- 未启用 HTTPS 时使用 `COOKIE_SECURE=false`；启用 HTTPS 后改为 `true`。
 
-构建并启动：
+## 部署应用
 
 ```bash
 docker compose build
@@ -37,87 +69,108 @@ docker compose ps
 
 ```bash
 docker compose logs -f app
-docker compose logs -f mysql
 ```
 
 健康检查：
 
 ```bash
-curl -f http://localhost:8080/actuator/health
+curl -f http://127.0.0.1:${APP_PORT:-8080}/actuator/health
 ```
 
-默认访问地址：
+默认访问地址（经已有 Nginx 转发后）：
 
-- 前台：`http://localhost:8080/`
-- 后台：`http://localhost:8080/admin`
+- 前台：`https://你的域名/`
+- 后台：`https://你的域名/admin`
 - 初始账号：`admin`
 - 初始密码：`Admin@123`
 
 首次登录后应立即修改后台密码。
+
+## 配置已有 Nginx
+
+仓库中的 `deploy/nginx/default.conf` 是站点配置示例。不要直接覆盖服务器现有的 `default.conf`，建议复制为独立站点文件：
+
+```bash
+sudo cp deploy/nginx/default.conf /etc/nginx/conf.d/mz-blog.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+修改其中的 `server_name` 为实际域名，并确认 `proxy_pass` 与应用端口一致：
+
+```nginx
+proxy_pass http://127.0.0.1:8080;
+```
+
+如果 `.env` 中使用了其他 `APP_PORT`，同时修改该行。证书和 HTTPS 由服务器已有 Nginx 统一管理。
 
 ## 更新发版
 
 ```bash
 git pull
 docker compose build app
-docker compose up -d app nginx
+docker compose up -d app
 docker compose ps
 ```
 
-Flyway 会在应用启动时执行尚未运行的迁移脚本。发版前先备份数据库：
+Flyway 会在应用启动时执行尚未运行的迁移脚本。发版前应备份外部数据库和上传文件。
+
+## 数据库备份与恢复
+
+在服务器安装 MySQL 客户端后执行。先加载 `.env` 中的连接参数：
 
 ```bash
-docker compose exec -T mysql sh -c \
-  'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers "$MYSQL_DATABASE"' \
-  > mz_blog_cms_$(date +%Y%m%d_%H%M%S).sql
+set -a
+. ./.env
+set +a
 ```
-
-## 数据备份与恢复
 
 备份：
 
 ```bash
-docker compose exec -T mysql sh -c \
-  'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers "$MYSQL_DATABASE"' \
-  > backup.sql
+mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" \
+  --single-transaction --routines --triggers "$DB_DATABASE" \
+  > "mz_blog_$(date +%Y%m%d_%H%M%S).sql"
 ```
 
 恢复：
 
 ```bash
-cat backup.sql | docker compose exec -T mysql sh -c \
-  'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" \
+  < backup.sql
 ```
 
-上传文件备份：
+注意：宿主机执行备份时如果 `DB_HOST=host.docker.internal`，宿主机通常无法解析该名称，应临时改为 `127.0.0.1` 或使用实际数据库地址。
+
+## 上传文件备份
 
 ```bash
 docker run --rm \
   -v mz-blog_uploads:/data \
   -v "$PWD":/backup \
-  alpine tar czf /backup/uploads_$(date +%Y%m%d).tar.gz -C /data .
+  alpine tar czf "/backup/uploads_$(date +%Y%m%d).tar.gz" -C /data .
+```
+
+恢复上传文件前先停止应用：
+
+```bash
+docker compose stop app
+docker run --rm \
+  -v mz-blog_uploads:/data \
+  -v "$PWD":/backup \
+  alpine sh -c 'tar xzf /backup/uploads_YYYYMMDD.tar.gz -C /data'
+docker compose start app
 ```
 
 ## 回滚
 
-代码回滚后重新构建应用：
-
 ```bash
 git checkout <上一个可用版本>
 docker compose build app
-docker compose up -d app nginx
+docker compose up -d app
 ```
 
-如果新版本包含不兼容的数据库迁移，需要恢复发版前的数据库备份。生产环境建议只使用向后兼容的迁移脚本，避免直接修改已执行的历史迁移。
-
-## HTTPS
-
-生产环境建议在 `nginx` 前增加 TLS 终止，或挂载证书并扩展 `deploy/nginx/default.conf` 的 443 Server 配置。启用 HTTPS 后必须设置：
-
-```bash
-SITE_BASE_URL=https://你的域名
-COOKIE_SECURE=true
-```
+如果新版本包含不兼容的数据库迁移，需要同时恢复发版前的数据库备份。生产环境建议只使用向后兼容的迁移脚本，避免直接修改已经执行过的历史迁移。
 
 ## 常用命令
 
@@ -126,5 +179,5 @@ docker compose ps
 docker compose logs -f app
 docker compose restart app
 docker compose down
-docker compose down -v   # 同时删除数据库和上传文件，谨慎使用
+docker compose down -v   # 只删除上传文件卷；外部 MySQL 和 Nginx 不受影响
 ```
