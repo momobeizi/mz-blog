@@ -4,7 +4,7 @@
 
 服务器上已经有 MySQL 和 Nginx，Compose 只部署应用：
 
-- `app`：Spring Boot 3 + Thymeleaf 前台 + 打包进应用的 React 后台管理系统。
+- `mz-blog`：Spring Boot 3 + Thymeleaf 前台 + 打包进应用的 React 后台管理系统。
 - `uploads`：上传文件持久化卷，容器内路径为 `/data/uploads`。
 
 应用仅绑定宿主机回环地址 `127.0.0.1:${APP_PORT}`，由服务器已有的 Nginx 反向代理对外提供服务。MySQL 也不在 Compose 中启动，应用通过环境变量连接已有数据库。
@@ -66,7 +66,7 @@ admin-web 源码
   -> pnpm build
   -> backend/src/main/resources/static/admin
   -> mvn package
-  -> deploy/app.jar（包含前台模板和后台管理页面）
+  -> deploy/mz-blog.jar（包含前台模板和后台管理页面）
 ```
 
 在开发机执行：
@@ -84,19 +84,19 @@ pnpm build
 
 cd ../backend
 mvn clean package -DskipTests
-cp target/mz-blog-*.jar ../deploy/app.jar
+cp target/mz-blog-*.jar ../deploy/mz-blog.jar
 ```
 
 也可以手工执行上述命令。构建完成后确认 JAR 存在：
 
 ```bash
-ls -lh deploy/app.jar
+ls -lh deploy/mz-blog.jar
 ```
 
 上传到服务器：
 
 ```bash
-scp deploy/app.jar 用户@服务器:/项目目录/mz-blog/deploy/app.jar
+scp deploy/mz-blog.jar 用户@服务器:/项目目录/mz-blog/deploy/mz-blog.jar
 ```
 
 服务器只需要 Docker，不需要安装 Node.js 或 Maven。
@@ -108,12 +108,12 @@ docker compose up -d --build
 docker compose ps
 ```
 
-Docker 构建只会把 `deploy/app.jar` 放入 Java 运行镜像，不会在服务器上重新编译前后端。
+Docker 构建只会把 `deploy/mz-blog.jar` 放入 Java 运行镜像，不会在服务器上重新编译前后端。镜像名为 `mz-blog:latest`，容器名为 `mz-blog`。
 
 查看日志：
 
 ```bash
-docker compose logs -f app
+docker compose logs -f mz-blog
 ```
 
 健康检查：
@@ -155,7 +155,7 @@ proxy_pass http://127.0.0.1:8080;
 
 ```bash
 ./scripts/build-app.sh
-scp deploy/app.jar 用户@服务器:/项目目录/mz-blog/deploy/app.jar
+scp deploy/mz-blog.jar 用户@服务器:/项目目录/mz-blog/deploy/mz-blog.jar
 ```
 
 服务器更新应用：
@@ -206,20 +206,20 @@ docker run --rm \
 恢复上传文件前先停止应用：
 
 ```bash
-docker compose stop app
+docker compose stop mz-blog
 docker run --rm \
   -v mz-blog_uploads:/data \
   -v "$PWD":/backup \
   alpine sh -c 'tar xzf /backup/uploads_YYYYMMDD.tar.gz -C /data'
-docker compose start app
+docker compose start mz-blog
 ```
 
 ## 回滚
 
-保留上一版本的 JAR，例如 `deploy/app.jar.previous`。回滚时替换 JAR 后重新构建容器：
+保留上一版本的 JAR，例如 `deploy/mz-blog.jar.previous`。回滚时替换 JAR 后重新构建容器：
 
 ```bash
-cp deploy/app.jar.previous deploy/app.jar
+cp deploy/mz-blog.jar.previous deploy/mz-blog.jar
 docker compose up -d --build
 ```
 
@@ -229,8 +229,8 @@ docker compose up -d --build
 
 ```bash
 docker compose ps
-docker compose logs -f app
-docker compose restart app
+docker compose logs -f mz-blog
+docker compose restart mz-blog
 docker compose down
 docker compose down -v   # 只删除上传文件卷；外部 MySQL 和 Nginx 不受影响
 ```

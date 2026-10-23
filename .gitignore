@@ -3,7 +3,7 @@ Thumbs.db
 *.log
 .env
 
-deploy/app.jar
+deploy/mz-blog.jar
 
 .idea/
 *.iml

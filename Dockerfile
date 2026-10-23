@@ -10,12 +10,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-ARG JAR_FILE=deploy/app.jar
-COPY ${JAR_FILE} /app/app.jar
+ARG JAR_FILE=deploy/mz-blog.jar
+COPY ${JAR_FILE} /app/mz-blog.jar
 
 RUN mkdir -p /data/uploads && chown -R app:app /app /data
 
 USER app
 EXPOSE 8080
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -Duser.timezone=Asia/Shanghai"
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/mz-blog.jar"]

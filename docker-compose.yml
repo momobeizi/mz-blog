@@ -2,13 +2,15 @@ name: mz-blog
 
 services:
 
-  app:
+  mz-blog:
+    image: mz-blog:latest
+    container_name: mz-blog
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
       args:
-        JAR_FILE: ${JAR_FILE:-deploy/app.jar}
+        JAR_FILE: ${JAR_FILE:-deploy/mz-blog.jar}
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
