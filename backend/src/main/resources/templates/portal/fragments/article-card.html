@@ -12,6 +12,10 @@
             <span class="meta-dot"></span>
             <a th:href="@{/categories/{slug}(slug=${article.categorySlug})}" th:if="${article.categorySlug != null}" th:text="${article.categoryName}">分类</a>
             <span th:if="${article.categorySlug == null}" th:text="${article.categoryName}">分类</span>
+            <th:block th:if="${article.readingMinutes != null}">
+                <span class="meta-dot"></span>
+                <span th:text="${article.readingMinutes} + ' 分钟'">5 分钟</span>
+            </th:block>
         </div>
         <h3><a th:href="@{/articles/{slug}(slug=${article.slug})}" th:text="${article.title}">文章标题</a></h3>
         <p th:text="${article.summary}">摘要</p>

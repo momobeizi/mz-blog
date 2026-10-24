@@ -90,6 +90,7 @@ export function ArticleListPage() {
     { title: '标签', dataIndex: 'tagNames', width: 170, render: (value: string[]) => value?.length ? value.slice(0, 2).map(tag => <Tag key={tag} bordered={false}>{tag}</Tag>) : <span className="muted">-</span> },
     { title: '状态', dataIndex: 'status', width: 90, render: value => <StatusTag value={value} /> },
     { title: '浏览', dataIndex: 'viewCount', width: 72, align: 'right' },
+    { title: '点赞', dataIndex: 'likeCount', width: 72, align: 'right' },
     { title: '发布时间', dataIndex: 'publishedAt', width: 140, render: value => value ? dayjs(value).format('YYYY-MM-DD HH:mm') : <span className="muted">未发布</span> },
     {
       title: '操作', width: 190, fixed: 'right',
@@ -120,7 +121,7 @@ export function ArticleListPage() {
             loading={loading}
             columns={columns}
             dataSource={data.records}
-            scroll={{ x: 1120 }}
+            scroll={{ x: 1192 }}
             pagination={{
               current: page, pageSize: size, total: data.total, showSizeChanger: true,
               showTotal: total => `共 ${total} 篇文章`,

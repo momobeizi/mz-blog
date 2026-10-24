@@ -425,6 +425,7 @@ P1 可增加：`sys_login_log`、`sys_operation_log`、`cms_article_revision`、
 - `content_format`：`HTML` 或 `MARKDOWN`，创建后不可直接切换。
 - `version`：乐观锁版本号，避免两个管理员同时覆盖编辑结果。
 - `view_count`：浏览量缓存值；P1 改为异步批量累加。
+- `like_count`：点赞量缓存值，由前台点赞接口原子累加；同一 IP 对同一文章每天最多点赞一次。
 - 首页排序：`is_top DESC, is_recommended DESC, published_at DESC`。
 
 #### 单页 `cms_page`
@@ -618,6 +619,7 @@ CREATE TABLE cms_article (
     is_top TINYINT NOT NULL DEFAULT 0,
     is_recommended TINYINT NOT NULL DEFAULT 0,
     view_count BIGINT NOT NULL DEFAULT 0,
+    like_count BIGINT NOT NULL DEFAULT 0,
     published_at DATETIME NULL,
     seo_title VARCHAR(200) NULL,
     seo_keywords VARCHAR(300) NULL,
@@ -633,8 +635,21 @@ CREATE TABLE cms_article (
     KEY idx_cms_article_status_time (status, deleted, published_at),
     KEY idx_cms_article_category (category_id, status, deleted, published_at),
     KEY idx_cms_article_author (author_id),
-    KEY idx_cms_article_home (status, deleted, is_top, is_recommended, published_at)
+    KEY idx_cms_article_home (status, deleted, is_top, is_recommended, published_at),
+    KEY idx_cms_article_view_rank (status, deleted, view_count),
+    KEY idx_cms_article_like_rank (status, deleted, like_count)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章';
+
+CREATE TABLE cms_article_like (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    article_id BIGINT NOT NULL,
+    ip_hash VARCHAR(64) NOT NULL,
+    like_day DATE NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_cms_article_like_day (article_id, ip_hash, like_day),
+    KEY idx_cms_article_like_ip_day (ip_hash, like_day)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章点赞记录';
 
 CREATE TABLE cms_article_tag (
     article_id BIGINT NOT NULL,
@@ -991,6 +1006,8 @@ VALUES
   "tagIds": ["1", "8"],
   "isTop": false,
   "isRecommended": true,
+  "publishedAt": null,
+  "viewCount": 0,
   "seoTitle": null,
   "seoKeywords": "Spring Boot,博客",
   "seoDescription": null
@@ -1061,7 +1078,7 @@ VALUES
 3. 调用 `ContentRenderService.render(contentFormat, content)`，得到清洗后的 `contentHtml` 和 `contentText`。
 4. 摘要为空时从 `contentText` 截取前 120 字。
 5. 保存编辑源 `content`、格式、渲染结果 `content_html`、纯文本和文章字段，并同步更新文章标签关联。
-6. 发布时写入 `published_at`，并广播内容变更事件清理缓存。
+6. 发布时按填写值写入 `published_at`，未填写则取当前时间；`view_count` 支持手工设置，新建未填写默认 0，更新未填写保持原值，并广播内容变更事件清理缓存。
 7. 返回最新实体和版本号。
 
 格式规则：
@@ -1239,6 +1256,14 @@ UPDATE cms_article SET view_count = view_count + 1 WHERE id = ?;
 ```
 
 P1 为降低热行写压力，改为应用内计数缓冲区，每 30–60 秒批量落库；进程关闭前 flush。浏览量不参与强一致业务。
+
+点赞与榜单：
+
+- 点赞接口：`POST /api/public/articles/{slug}/like`，通过 CSRF 校验后原子更新 `like_count`。
+- 去重：`cms_article_like` 以 `(article_id, ip_hash, like_day)` 唯一键保证同一 IP 对同一文章每天最多一次。
+- 限流：单 IP 10 秒内最多 5 次请求、1 小时内最多 20 次请求、每天最多 30 次点赞；超限返回 `429`。
+- 排行榜：首页按 `view_count` 和 `like_count` 分别倒序取前 10 篇已发布文章。
+- 阅读统计：按正文纯文本的有效字符数计算字数，按每分钟 400 字估算阅读时长。
 
 ### 8.9 定时任务
 

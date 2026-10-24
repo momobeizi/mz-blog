@@ -28,6 +28,10 @@
             <a th:each="tag : ${tags}" th:href="@{/tags/{slug}(slug=${tag.slug})}" th:text="'#' + ${tag.name}"></a>
         </div>
     </section>
+    <section class="side-card">
+        <h3><span></span> 排行</h3>
+        <a class="text-link" th:href="@{/} + '#rankings'">查看阅读与点赞 TOP 10 <span>→</span></a>
+    </section>
     <section class="side-card side-note">
         <div class="note-mark">“</div>
         <p>记录不是为了证明什么，而是给未来的自己留一盏灯。</p>

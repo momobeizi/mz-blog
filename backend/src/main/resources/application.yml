@@ -62,6 +62,7 @@ app:
   security:
     login-failure-window-minutes: 15
     login-failure-limit: 5
+    like-ip-salt: ${LIKE_IP_SALT:mz-blog-like}
 
 logging:
   level:

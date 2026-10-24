@@ -16,6 +16,7 @@ import com.mz.blog.content.tag.TagMapper;
 import com.mz.blog.system.user.SysUser;
 import com.mz.blog.system.user.UserMapper;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,6 +48,7 @@ public class ArticleAdminController {
     public record ArticlePayload(@NotBlank String title, String slug, String summary, String coverUrl,
                                  @NotBlank String content, String contentFormat, Long categoryId,
                                  String status, Integer isTop, Integer isRecommended,
+                                 @Min(0) Long viewCount, LocalDateTime publishedAt,
                                  String seoTitle, String seoKeywords, String seoDescription,
                                  List<Long> tagIds, Integer version) {
     }
@@ -97,7 +99,6 @@ public class ArticleAdminController {
         apply(article, payload, null);
         article.setAuthorId(SecurityUtils.currentUserId());
         article.setCreatedBy(SecurityUtils.currentUserId());
-        article.setViewCount(0L);
         article.setVersion(0);
         articleMapper.insert(article);
         saveTags(article.getId(), payload.tagIds());
@@ -181,14 +182,18 @@ public class ArticleAdminController {
         article.setStatus(status);
         article.setIsTop(payload.isTop() == null ? 0 : payload.isTop());
         article.setIsRecommended(payload.isRecommended() == null ? 0 : payload.isRecommended());
+        article.setViewCount(payload.viewCount() == null
+                ? (article.getViewCount() == null ? 0L : article.getViewCount())
+                : payload.viewCount());
         article.setSeoTitle(payload.seoTitle());
         article.setSeoKeywords(payload.seoKeywords());
         article.setSeoDescription(payload.seoDescription());
-        if ("PUBLISHED".equals(status) && article.getPublishedAt() == null) {
-            article.setPublishedAt(LocalDateTime.now());
-        }
-        if ("DRAFT".equals(status)) {
+        if (payload.publishedAt() != null) {
+            article.setPublishedAt(payload.publishedAt());
+        } else if ("DRAFT".equals(status)) {
             article.setPublishedAt(null);
+        } else if ("PUBLISHED".equals(status) && article.getPublishedAt() == null) {
+            article.setPublishedAt(LocalDateTime.now());
         }
     }
 

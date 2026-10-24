@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Button, Collapse, Form, Input, Select, Space, Spin, Switch, message } from 'antd'
+import { Button, Collapse, DatePicker, Form, Input, InputNumber, Select, Space, Spin, Switch, message } from 'antd'
 import { ArrowLeftOutlined, EyeOutlined, FileTextOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
+import dayjs, { type Dayjs } from 'dayjs'
 import { articleApi, categoryApi, tagApi } from '@/api'
 import { errorMessage } from '@/api/client'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
@@ -20,6 +21,8 @@ interface FormValues {
   status: 'DRAFT' | 'PUBLISHED' | 'OFFLINE'
   isTop: boolean
   isRecommended: boolean
+  publishedAt?: Dayjs | null
+  viewCount?: number | null
   tagIds?: string[]
   seoTitle?: string
   seoKeywords?: string
@@ -45,7 +48,10 @@ export function ArticleEditorPage() {
 
   useEffect(() => {
     if (!id) {
-      form.setFieldsValue({ contentFormat: 'HTML', status: 'DRAFT', isTop: false, isRecommended: false, content: '' })
+      form.setFieldsValue({
+        contentFormat: 'HTML', status: 'DRAFT', isTop: false, isRecommended: false,
+        content: '', viewCount: 0, publishedAt: null,
+      })
       return
     }
     articleApi.get(id).then(article => {
@@ -53,6 +59,8 @@ export function ArticleEditorPage() {
         ...article,
         isTop: article.isTop === 1,
         isRecommended: article.isRecommended === 1,
+        publishedAt: article.publishedAt ? dayjs(article.publishedAt) : null,
+        viewCount: Number(article.viewCount ?? 0),
         tagIds: article.tagIds || [],
         contentFormat: article.contentFormat,
       })
@@ -66,6 +74,8 @@ export function ArticleEditorPage() {
       setSaving(true)
       const payload = {
         ...values,
+        publishedAt: values.publishedAt ? values.publishedAt.format('YYYY-MM-DDTHH:mm:ss') : null,
+        viewCount: values.viewCount ?? 0,
         status,
         isTop: values.isTop ? 1 : 0,
         isRecommended: values.isRecommended ? 1 : 0,
@@ -145,6 +155,12 @@ export function ArticleEditorPage() {
               </Form.Item>
               <Form.Item label="标签" name="tagIds">
                 <Select mode="multiple" placeholder="选择标签" options={tags.map(item => ({ label: item.name, value: item.id }))} />
+              </Form.Item>
+              <Form.Item label="发布日期" name="publishedAt" extra={id ? '留空时保持原发布时间，可手动修改。' : '留空时发布会自动使用当前时间；填写未来时间将在到点后展示。'}>
+                <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: '100%' }} placeholder="留空自动使用当前时间" />
+              </Form.Item>
+              <Form.Item label="阅读次数" name="viewCount" extra="新建文章默认 0，可手动调整。">
+                <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="0" />
               </Form.Item>
               <div className="switch-row"><span>置顶文章</span><Form.Item name="isTop" valuePropName="checked" noStyle><Switch /></Form.Item></div>
               <div className="switch-row"><span>推荐到首页</span><Form.Item name="isRecommended" valuePropName="checked" noStyle><Switch /></Form.Item></div>

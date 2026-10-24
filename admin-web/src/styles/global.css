@@ -429,7 +429,7 @@ a { color: var(--fp-accent-text); }
 .ant-picker,
 .ant-select-selector,
 .ant-input-outlined {
-  border-style: dashed !important;
+  /* border-style: dashed !important; */
   border-color: var(--fp-paper-300) !important;
   border-radius: 3px !important;
   background: var(--fp-paper-0) !important;
@@ -448,7 +448,7 @@ a { color: var(--fp-accent-text); }
 .ant-input-number-focused,
 .ant-picker-focused,
 .ant-select-focused .ant-select-selector {
-  border-style: solid !important;
+  /* border-style: solid !important; */
   border-color: var(--fp-green-500) !important;
   box-shadow: 0 0 0 3px var(--fp-green-100) !important;
 }

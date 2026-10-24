@@ -54,6 +54,7 @@ export interface Article {
   isTop: number
   isRecommended: number
   viewCount: number
+  likeCount: number
   publishedAt?: string
   seoTitle?: string
   seoKeywords?: string

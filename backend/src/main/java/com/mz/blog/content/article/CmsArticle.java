@@ -31,6 +31,7 @@ public class CmsArticle {
     private Integer isTop;
     private Integer isRecommended;
     private Long viewCount;
+    private Long likeCount;
     private LocalDateTime publishedAt;
     private String seoTitle;
     private String seoKeywords;
@@ -49,6 +50,10 @@ public class CmsArticle {
     private String categorySlug;
     @TableField(exist = false)
     private String authorName;
+    @TableField(exist = false)
+    private Integer wordCount;
+    @TableField(exist = false)
+    private Integer readingMinutes;
     @TableField(exist = false)
     private List<Long> tagIds = new ArrayList<>();
     @TableField(exist = false)

@@ -34,4 +34,8 @@ public class BusinessException extends RuntimeException {
     public static BusinessException badRequest(String message) {
         return new BusinessException(40001, HttpStatus.BAD_REQUEST, message);
     }
+
+    public static BusinessException tooManyRequests(String message) {
+        return new BusinessException(42900, HttpStatus.TOO_MANY_REQUESTS, message);
+    }
 }

@@ -14,6 +14,10 @@
                 <time th:text="${#strings.substring(article.publishedAt.toString(), 0, 10)}">2026-10-18</time>
                 <span class="dot"></span>
                 <span th:text="${article.viewCount} + ' 阅读'">0 阅读</span>
+                <span class="dot"></span>
+                <span th:text="${article.wordCount} + ' 字'">0 字</span>
+                <span class="dot"></span>
+                <span th:text="|约 ${article.readingMinutes} 分钟|">约 1 分钟</span>
             </div>
         </div>
     </section>
@@ -27,6 +31,14 @@
             <div class="article-tags" th:if="${!articleTags.isEmpty()}">
                 <span>Tagged</span>
                 <a th:each="tag : ${articleTags}" th:href="@{/tags/{slug}(slug=${tag.slug})}" th:text="'#' + ${tag.name}"></a>
+            </div>
+            <div class="article-actions">
+                <button type="button" class="like-button" th:attr="data-like-article=${article.id}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+                    <span class="like-label">喜欢</span>
+                    <strong class="like-count" th:text="${article.likeCount}">0</strong>
+                </button>
+                <small class="like-tip">每个 IP 每天可点赞一次</small>
             </div>
             <div class="article-nav">
                 <a th:if="${previousArticle != null}" th:href="@{/articles/{slug}(slug=${previousArticle.slug})}" class="prev">
@@ -44,6 +56,7 @@
                 <img th:src="${author != null ? author.avatarUrl : site['site.logo']}" alt="">
                 <div><strong th:text="${author != null ? author.nickname : '站长'}">站长</strong><small>持续记录的人</small></div>
             </div>
+            <a class="text-link" th:href="@{/} + '#rankings'">查看全站排行 →</a>
         </aside>
     </div>
     <section class="related-wrap" th:if="${!relatedArticles.isEmpty()}">

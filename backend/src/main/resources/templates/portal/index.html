@@ -44,6 +44,36 @@
                 </div>
             </section>
 
+            <section class="content-section" id="rankings" th:if="${!viewRanking.isEmpty() or !likeRanking.isEmpty()}">
+                <div class="section-heading">
+                    <div><span class="section-kicker">TOP 10</span><h2>阅读与点赞排行</h2></div>
+                </div>
+                <div class="ranking-grid">
+                    <div class="ranking-card">
+                        <h3>阅读 TOP 10</h3>
+                        <ol class="ranking-list">
+                            <li th:each="article,stat : ${viewRanking}">
+                                <span class="rank-index" th:text="${stat.count}">1</span>
+                                <a th:href="@{/articles/{slug}(slug=${article.slug})}" th:text="${article.title}">文章标题</a>
+                                <small th:text="${article.viewCount} + ' 阅读'">0 阅读</small>
+                            </li>
+                        </ol>
+                        <div class="empty-state" th:if="${viewRanking.isEmpty()}">还没有阅读数据。</div>
+                    </div>
+                    <div class="ranking-card">
+                        <h3>点赞 TOP 10</h3>
+                        <ol class="ranking-list">
+                            <li th:each="article,stat : ${likeRanking}">
+                                <span class="rank-index" th:text="${stat.count}">1</span>
+                                <a th:href="@{/articles/{slug}(slug=${article.slug})}" th:text="${article.title}">文章标题</a>
+                                <small th:text="${article.likeCount} + ' 赞'">0 赞</small>
+                            </li>
+                        </ol>
+                        <div class="empty-state" th:if="${likeRanking.isEmpty()}">还没有点赞数据。</div>
+                    </div>
+                </div>
+            </section>
+
             <section class="quote-band">
                 <span>“</span>
                 <p>把生活写成一座可以回来的花园。</p>

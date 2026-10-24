@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PortalController {
 
+    private static final int READING_CHARS_PER_MINUTE = 400;
+
     private final PortalService portalService;
     private final ArticleMapper articleMapper;
     private final com.mz.blog.content.article.ArticleTagMapper articleTagMapper;
@@ -66,6 +68,21 @@ public class PortalController {
             }
         }
         model.addAttribute("latestArticles", latest);
+        List<CmsArticle> viewRanking = articleMapper.selectList(portalService.publishedQuery()
+                .gt(CmsArticle::getViewCount, 0)
+                .orderByDesc(CmsArticle::getViewCount)
+                .orderByDesc(CmsArticle::getPublishedAt)
+                .last("LIMIT 10"));
+        List<CmsArticle> likeRanking = articleMapper.selectList(portalService.publishedQuery()
+                .gt(CmsArticle::getLikeCount, 0)
+                .orderByDesc(CmsArticle::getLikeCount)
+                .orderByDesc(CmsArticle::getViewCount)
+                .orderByDesc(CmsArticle::getPublishedAt)
+                .last("LIMIT 10"));
+        enrich(viewRanking);
+        enrich(likeRanking);
+        model.addAttribute("viewRanking", viewRanking);
+        model.addAttribute("likeRanking", likeRanking);
         model.addAttribute("categories", categories);
         model.addAttribute("categoryArticles", byCategory);
         model.addAttribute("tags", portalService.tags());
@@ -241,6 +258,21 @@ public class PortalController {
             List<Long> tagIds = articleTagMapper.selectTagIds(article.getId());
             article.setTagIds(tagIds);
             article.setTagNames(tagIds.stream().map(tags::get).filter(Objects::nonNull).map(CmsTag::getName).toList());
+            int charCount = countReadableChars(article.getContentText());
+            article.setWordCount(charCount);
+            article.setReadingMinutes(charCount == 0 ? 0 : Math.max(1,
+                    (int) Math.ceil(charCount / (double) READING_CHARS_PER_MINUTE)));
         }
+    }
+
+    private int countReadableChars(String text) {
+        if (text == null) return 0;
+        int count = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isLetterOrDigit(text.charAt(i))) {
+                count++;
+            }
+        }
+        return count;
     }
 }
