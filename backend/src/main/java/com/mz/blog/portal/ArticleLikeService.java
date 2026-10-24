@@ -46,18 +46,13 @@ public class ArticleLikeService {
             .build();
 
     @Transactional
-    public LikeResult like(String slug, String ip) {
+    public LikeResult like(String slugOrId, String ip) {
         String ipHash = hash(ip);
         if (!allowRequest(ipHash)) {
             throw BusinessException.tooManyRequests("点赞太频繁，请稍后再试");
         }
 
-        CmsArticle article = articleMapper.selectOne(Wrappers.<CmsArticle>lambdaQuery()
-                .eq(CmsArticle::getSlug, slug)
-                .eq(CmsArticle::getStatus, "PUBLISHED")
-                .isNotNull(CmsArticle::getPublishedAt)
-                .le(CmsArticle::getPublishedAt, LocalDateTime.now())
-                .last("LIMIT 1"));
+        CmsArticle article = findPublished(slugOrId);
         if (article == null) {
             throw BusinessException.notFound("文章不存在");
         }
@@ -79,6 +74,33 @@ public class ArticleLikeService {
                 .eq(CmsArticle::getId, article.getId())
                 .setSql("like_count = like_count + 1"));
         return new LikeResult(likeCount(article.getId()), true, "感谢你的喜欢");
+    }
+
+    private CmsArticle findPublished(String slugOrId) {
+        var query = Wrappers.<CmsArticle>lambdaQuery()
+                .eq(CmsArticle::getStatus, "PUBLISHED")
+                .isNotNull(CmsArticle::getPublishedAt)
+                .le(CmsArticle::getPublishedAt, LocalDateTime.now());
+        if (isNumericId(slugOrId)) {
+            long id = Long.parseLong(slugOrId);
+            query.and(condition -> condition.eq(CmsArticle::getSlug, slugOrId).or().eq(CmsArticle::getId, id));
+        } else {
+            query.eq(CmsArticle::getSlug, slugOrId);
+        }
+        return articleMapper.selectOne(query.last("LIMIT 1"));
+    }
+
+    private boolean isNumericId(String value) {
+        if (value == null || value.isEmpty() || value.length() > 18) {
+            return false;
+        }
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean allowRequest(String ipHash) {
