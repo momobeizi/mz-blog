@@ -357,7 +357,7 @@ button, input { font: inherit; }
   --line: var(--paper-200);
   --sand: var(--paper-100);
   --shadow: var(--shadow-lift);
-  --serif: "Sniglet", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --serif: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
   --mono: "Source Code Pro", "SFMono-Regular", Consolas, monospace;
 }
@@ -591,7 +591,7 @@ button, input, textarea, select { font-family: inherit; }
 .prose h1, .prose h2, .prose h3, .prose h4 { font-family: var(--serif); color: var(--ink-900); font-weight: 800; }
 .prose a { color: var(--mint-deep); text-decoration: underline; text-decoration-style: dashed; text-underline-offset: 3px; }
 .prose blockquote { background: var(--paper-100); border-left: 3px dashed var(--green-500); color: var(--ink-700); font-family: var(--sans); font-weight: 500; border-radius: 0 3px 3px 0; }
-.prose code { font-family: var(--mono); background: var(--paper-100); color: var(--mint-deep); border: 1px solid var(--paper-200); border-radius: 2px; }
+.prose code { font-family: var(--mono); background: var(--paper-100); color: var(--mint-deep); }
 .prose pre { background: var(--ink-900); border-radius: 4px; }
 .prose th, .prose td { border-color: var(--paper-200); }
 .prose th { background: var(--paper-100); }
