@@ -53,7 +53,6 @@ export function LoginPage() {
             </Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block size="large">进入后台</Button>
           </Form>
-          <p className="login-hint">初始账号 admin · 密码 Admin@123</p>
         </div>
       </div>
     </div>
